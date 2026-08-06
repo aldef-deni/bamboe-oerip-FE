@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-50: #f0f9f4;
+  --color-brand-100: #dcf1e3;
+  --color-brand-200: #bce3ca;
+  --color-brand-300: #8ecda6;
+  --color-brand-400: #59ae7c;
+  --color-brand-500: #35915d;
+  --color-brand-600: #257449;
+  --color-brand-700: #1e5c3c;
+  --color-brand-800: #1a4a32;
+  --color-brand-900: #163d2b;
+  --color-sand-50: #faf7f2;
+  --color-sand-100: #f2ebdf;
+  --color-sand-200: #e6d8c3;
+  --color-gold-50: #fbf6e9;
+  --color-gold-100: #f6eccd;
+  --color-gold-200: #ecd89b;
+  --color-gold-300: #e0c268;
+  --color-gold-400: #d4af37;
+  --color-gold-500: #c29a2b;
+  --color-gold-600: #a67f24;
+  --color-gold-700: #856425;
+
+  --font-sans: "Inter", system-ui, -apple-system, sans-serif;
+  --font-serif: "Georgia", "Cambria", "Times New Roman", serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-sans);
+  color: #1f2937;
+  background: #ffffff;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* react-day-picker: 2 bulan berdampingan + warna brand (pakai !important
+   karena rdp v10 memakai CSS nesting dg spesifisitas sama & dimuat belakangan) */
+.rdp-root .rdp-months {
+  display: flex !important;
+  flex-direction: row !important;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+.rdp-root {
+  --rdp-accent-color: #257449 !important;
+  --rdp-accent-background-color: #dcf1e3 !important;
+  --rdp-today-color: #257449 !important;
+  color: #1f2937;
+}

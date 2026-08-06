@@ -1,0 +1,40 @@
+{
+  "name": "fe",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "postbuild": "powershell -NoProfile -Command \"Get-ChildItem -Path dist -Force | Compress-Archive -DestinationPath villabox-fe.zip -Force\"",
+    "build:staging": "vite build --mode staging",
+    "postbuild:staging": "powershell -NoProfile -Command \"Get-ChildItem -Path dist -Force | Compress-Archive -DestinationPath villabox-fe.zip -Force\"",
+    "build:admin": "vite build --mode admin --outDir dist-admin",
+    "postbuild:admin": "powershell -NoProfile -Command \"Get-ChildItem -Path dist-admin -Force | Compress-Archive -DestinationPath villabox-admin.zip -Force\"",
+    "lint": "oxlint",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.18.1",
+    "date-fns": "^4.4.0",
+    "jspdf": "^4.2.1",
+    "jspdf-autotable": "^5.0.8",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.24.0",
+    "react": "^19.2.7",
+    "react-day-picker": "^10.0.1",
+    "react-dom": "^19.2.7",
+    "react-leaflet": "^5.0.0",
+    "react-router-dom": "^7.18.1",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/vite": "^4.3.2",
+    "@types/react": "^19.2.17",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^6.0.3",
+    "oxlint": "^1.71.0",
+    "tailwindcss": "^4.3.2",
+    "vite": "^8.1.1"
+  }
+}
