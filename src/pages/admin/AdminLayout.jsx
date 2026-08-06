@@ -95,7 +95,7 @@ export default function AdminLayout() {
 
       {/* Content */}
       <div className="flex min-w-0 flex-1 flex-col bg-gradient-to-br from-gray-50 via-white to-emerald-50/40">
-        <header className="relative flex h-20 items-center justify-between border-b border-gray-100 bg-white/70 px-4 backdrop-blur md:px-6">
+        <header className="relative z-30 flex h-20 items-center justify-between border-b border-gray-100 bg-white/70 px-4 backdrop-blur md:px-6">
           <button className="md:hidden" onClick={() => setOpen(true)}>
             <Menu className="h-6 w-6" />
           </button>
