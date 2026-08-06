@@ -18,6 +18,7 @@ import {
   Coins,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import NotificationBell from '../../components/NotificationBell'
 
 const nav = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -108,20 +109,23 @@ export default function AdminLayout() {
             <img src="/logo-landsc.png" alt="Villa Box" className="h-14 w-auto max-w-[190px] object-contain" />
           </Link>
 
-          {/* Profil: desktop saja — di mobile sudah ada "Profil Saya" di drawer */}
-          <Link
-            to="/admin/profile"
-            className="ml-auto hidden items-center gap-3 rounded-full py-1 pl-3 pr-1 transition hover:bg-gray-50 md:flex"
-          >
-            <span className="hidden text-sm text-gray-600 sm:inline">Hai, {user?.name}</span>
-            {user?.avatar_url ? (
-              <img src={user.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-brand-100" />
-            ) : (
-              <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-sm font-semibold text-white">
-                {user?.name?.charAt(0).toUpperCase()}
-              </span>
-            )}
-          </Link>
+          {/* Notifikasi + Profil */}
+          <div className="ml-auto flex items-center gap-1 md:gap-3">
+            <NotificationBell base="/admin/notifications" />
+            <Link
+              to="/admin/profile"
+              className="hidden items-center gap-3 rounded-full py-1 pl-3 pr-1 transition hover:bg-gray-50 md:flex"
+            >
+              <span className="hidden text-sm text-gray-600 sm:inline">Hai, {user?.name}</span>
+              {user?.avatar_url ? (
+                <img src={user.avatar_url} alt="" className="h-9 w-9 rounded-full object-cover ring-2 ring-brand-100" />
+              ) : (
+                <span className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-sm font-semibold text-white">
+                  {user?.name?.charAt(0).toUpperCase()}
+                </span>
+              )}
+            </Link>
+          </div>
         </header>
         <main className="flex-1 p-4 md:p-6">
           <Outlet />

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { Heart, User, LogOut, Menu, X, LayoutDashboard, CalendarCheck } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import NotificationBell from './NotificationBell'
 
 // URL dashboard admin: eksternal (kelola.bamboeoerip.com) di build customer,
 // atau internal '/admin' saat pengembangan gabungan.
@@ -60,6 +61,7 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          {user && <NotificationBell />}
           {user ? (
             <div className="relative">
               <button
@@ -142,9 +144,12 @@ export default function Navbar() {
           )}
         </div>
 
-        <button className="md:hidden" onClick={() => setOpen((v) => !v)}>
-          {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex items-center gap-1 md:hidden">
+          {user && <NotificationBell />}
+          <button onClick={() => setOpen((v) => !v)}>
+            {open ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {open && (
