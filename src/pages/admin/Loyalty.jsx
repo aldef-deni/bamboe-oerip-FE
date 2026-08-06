@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Coins, TrendingUp, TrendingDown, Clock, Save, Settings2, Users } from 'lucide-react'
+import { Coins, TrendingUp, TrendingDown, Clock, Save, Settings2, Users, Search, UserCog, Crown, Plus, Minus } from 'lucide-react'
 import api from '../../lib/api'
 import { formatDate, rupiah } from '../../lib/format'
 import { PageLoader, Button, Badge, EmptyState, Input } from '../../components/ui'
@@ -28,6 +28,82 @@ export default function AdminLoyalty() {
   const [rupiahPerPoint, setRupiahPerPoint] = useState(10000)
   const [saving, setSaving] = useState(false)
   const [message, setMessage] = useState('')
+
+  // Kelola poin & tier per pelanggan
+  const [q, setQ] = useState('')
+  const [results, setResults] = useState([])
+  const [sel, setSel] = useState(null)
+  const [pForm, setPForm] = useState({ points: '', direction: 'add', description: '' })
+  const [tierVal, setTierVal] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [msg2, setMsg2] = useState('')
+
+  const fmt = (n) => Number(n ?? 0).toLocaleString('id-ID')
+
+  const searchUsers = async (term) => {
+    if (!term.trim()) return setResults([])
+    try {
+      const res = await api.get('/admin/users', { params: { role: 'user', search: term, per_page: 8 } })
+      setResults(res.data.data || [])
+    } catch {
+      setResults([])
+    }
+  }
+
+  const refreshSel = async (id) => {
+    const res = await api.get(`/admin/loyalty/user/${id}`)
+    setSel(res.data)
+    setTierVal(res.data.tier_override || '')
+  }
+
+  const pickUser = async (u) => {
+    setResults([])
+    setQ('')
+    setMsg2('')
+    setPForm({ points: '', direction: 'add', description: '' })
+    try {
+      await refreshSel(u.id)
+    } catch {
+      setMsg2('Gagal memuat data pelanggan.')
+    }
+  }
+
+  const submitPoints = async (e) => {
+    e.preventDefault()
+    if (!sel || !pForm.points) return
+    setBusy(true)
+    setMsg2('')
+    try {
+      const res = await api.post(`/admin/loyalty/adjust/${sel.id}`, {
+        points: Math.abs(Number(pForm.points)),
+        direction: pForm.direction,
+        description: pForm.description || (pForm.direction === 'add' ? 'Penambahan poin manual oleh admin' : 'Pengurangan poin manual oleh admin'),
+      })
+      setMsg2(res.data.message)
+      setPForm({ points: '', direction: 'add', description: '' })
+      await refreshSel(sel.id)
+      load()
+    } catch (err) {
+      setMsg2(err.response?.data?.message || 'Gagal menyimpan poin.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  const submitTier = async () => {
+    if (!sel) return
+    setBusy(true)
+    setMsg2('')
+    try {
+      const res = await api.post(`/admin/loyalty/tier/${sel.id}`, { tier: tierVal || null })
+      setMsg2(res.data.message)
+      await refreshSel(sel.id)
+    } catch (err) {
+      setMsg2(err.response?.data?.message || 'Gagal mengubah tier.')
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const load = () => {
     setLoading(true)
@@ -111,6 +187,171 @@ export default function AdminLoyalty() {
           ))}
         </div>
       )}
+
+      {/* Kelola Poin & Tier per Pelanggan */}
+      <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
+        <div className="mb-1 flex items-center gap-2">
+          <UserCog className="h-5 w-5 text-brand-600" />
+          <h2 className="font-bold text-gray-900">Kelola Poin &amp; Tier Pelanggan</h2>
+        </div>
+        <p className="mb-4 text-sm text-gray-500">Input poin manual dan tetapkan tier pelanggan secara langsung.</p>
+
+        {/* Cari pelanggan */}
+        <div className="relative max-w-md">
+          <div className="flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-3">
+            <Search className="h-4 w-4 text-gray-400" />
+            <input
+              value={q}
+              onChange={(e) => {
+                setQ(e.target.value)
+                searchUsers(e.target.value)
+              }}
+              placeholder="Cari pelanggan (nama / email)…"
+              className="w-full bg-transparent py-2.5 text-sm outline-none"
+            />
+          </div>
+          {results.length > 0 && (
+            <div className="absolute z-20 mt-1 max-h-72 w-full overflow-auto rounded-xl border border-gray-100 bg-white py-1 shadow-lg">
+              {results.map((u) => (
+                <button
+                  key={u.id}
+                  onClick={() => pickUser(u)}
+                  className="flex w-full items-center gap-3 px-3 py-2 text-left hover:bg-gray-50"
+                >
+                  {u.avatar_url ? (
+                    <img src={u.avatar_url} alt="" className="h-8 w-8 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex h-8 w-8 items-center justify-center rounded-full bg-brand-600 text-xs font-semibold text-white">
+                      {u.name?.charAt(0).toUpperCase()}
+                    </span>
+                  )}
+                  <div className="min-w-0">
+                    <div className="truncate text-sm font-medium text-gray-900">{u.name}</div>
+                    <div className="truncate text-xs text-gray-400">{u.email}</div>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {msg2 && (
+          <div className={`mt-4 rounded-xl px-4 py-3 text-sm ${msg2.toLowerCase().includes('gagal') ? 'bg-red-50 text-red-700' : 'bg-emerald-50 text-emerald-700'}`}>
+            {msg2}
+          </div>
+        )}
+
+        {sel && (
+          <div className="mt-5 rounded-2xl border border-gray-100 bg-gray-50/60 p-4">
+            {/* Ringkasan pelanggan */}
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 pb-3">
+              <div className="flex items-center gap-3">
+                {sel.avatar_url ? (
+                  <img src={sel.avatar_url} alt="" className="h-10 w-10 rounded-full object-cover" />
+                ) : (
+                  <span className="flex h-10 w-10 items-center justify-center rounded-full bg-brand-600 text-sm font-semibold text-white">
+                    {sel.name?.charAt(0).toUpperCase()}
+                  </span>
+                )}
+                <div className="min-w-0">
+                  <div className="font-semibold text-gray-900">{sel.name}</div>
+                  <div className="truncate text-xs text-gray-400">{sel.email}</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4">
+                <div className="text-right">
+                  <div className="text-[11px] uppercase tracking-wide text-gray-400">Saldo</div>
+                  <div className="font-bold text-brand-700">{fmt(sel.balance)}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-[11px] uppercase tracking-wide text-gray-400">Seumur hidup</div>
+                  <div className="font-bold text-gray-800">{fmt(sel.lifetime_points)}</div>
+                </div>
+                <span
+                  className="rounded-full px-3 py-1 text-xs font-bold text-white shadow-sm"
+                  style={{ background: `linear-gradient(135deg, ${sel.current_tier?.gradient_from || sel.current_tier?.color}, ${sel.current_tier?.gradient_to || sel.current_tier?.color})` }}
+                >
+                  {sel.current_tier?.name}
+                  {sel.is_override ? ' · manual' : ''}
+                </span>
+              </div>
+            </div>
+
+            <div className="mt-4 grid gap-4 md:grid-cols-2">
+              {/* Input poin manual */}
+              <form onSubmit={submitPoints} className="rounded-xl border border-gray-100 bg-white p-4">
+                <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-gray-900">
+                  <Coins className="h-4 w-4 text-brand-600" /> Input Poin Manual
+                </h3>
+                <div className="mb-3 grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setPForm((f) => ({ ...f, direction: 'add' }))}
+                    className={`flex items-center justify-center gap-1.5 rounded-lg border py-2 text-sm font-semibold transition ${pForm.direction === 'add' ? 'border-emerald-300 bg-emerald-50 text-emerald-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                  >
+                    <Plus className="h-4 w-4" /> Tambah
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPForm((f) => ({ ...f, direction: 'subtract' }))}
+                    className={`flex items-center justify-center gap-1.5 rounded-lg border py-2 text-sm font-semibold transition ${pForm.direction === 'subtract' ? 'border-red-300 bg-red-50 text-red-700' : 'border-gray-200 text-gray-500 hover:bg-gray-50'}`}
+                  >
+                    <Minus className="h-4 w-4" /> Kurangi
+                  </button>
+                </div>
+                <div className="space-y-3">
+                  <Input
+                    label="Jumlah poin"
+                    type="number"
+                    min="1"
+                    required
+                    value={pForm.points}
+                    onChange={(e) => setPForm((f) => ({ ...f, points: e.target.value }))}
+                    placeholder="cth: 500"
+                  />
+                  <Input
+                    label="Keterangan (opsional)"
+                    value={pForm.description}
+                    onChange={(e) => setPForm((f) => ({ ...f, description: e.target.value }))}
+                    placeholder="cth: Bonus event / koreksi"
+                  />
+                </div>
+                <Button type="submit" loading={busy} className="mt-3 w-full">
+                  Simpan Poin
+                </Button>
+              </form>
+
+              {/* Ubah tier manual */}
+              <div className="rounded-xl border border-gray-100 bg-white p-4">
+                <h3 className="mb-3 flex items-center gap-1.5 text-sm font-bold text-gray-900">
+                  <Crown className="h-4 w-4 text-brand-600" /> Ubah Tier Manual
+                </h3>
+                <label className="block">
+                  <span className="mb-1 block text-sm font-medium text-gray-700">Tier pelanggan</span>
+                  <select
+                    value={tierVal}
+                    onChange={(e) => setTierVal(e.target.value)}
+                    className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm outline-none focus:border-brand-500"
+                  >
+                    <option value="">Otomatis (mengikuti poin)</option>
+                    {tiers.map((t) => (
+                      <option key={t.slug} value={t.slug}>
+                        {t.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <p className="mt-1.5 text-xs text-gray-400">
+                  Pilih <span className="font-medium">Otomatis</span> agar tier kembali dihitung dari poin pelanggan.
+                </p>
+                <Button onClick={submitTier} loading={busy} variant="outline" className="mt-3 w-full">
+                  Terapkan Tier
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       {/* Pengaturan Tier */}
       <div className="rounded-2xl border border-gray-100 bg-white p-5 sm:p-6">
@@ -222,9 +463,14 @@ export default function AdminLoyalty() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className={`text-sm font-bold ${item.type === 'spend' || item.type === 'expire' ? 'text-gray-500' : 'text-emerald-600'}`}>
-                    {item.type === 'spend' ? '-' : '+'}{item.points}
-                  </div>
+                  {(() => {
+                    const neg = item.points < 0 || item.type === 'spend' || item.type === 'expire'
+                    return (
+                      <div className={`text-sm font-bold ${neg ? 'text-gray-500' : 'text-emerald-600'}`}>
+                        {neg ? '-' : '+'}{Math.abs(item.points)}
+                      </div>
+                    )
+                  })()}
                   <Badge className={TYPE_LABELS[item.type]?.className}>{TYPE_LABELS[item.type]?.label}</Badge>
                 </div>
               </div>

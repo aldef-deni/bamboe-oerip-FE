@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Store, Phone, Landmark, Check, Settings as SettingsIcon } from 'lucide-react'
+import { Store, Phone, Landmark, Check, Settings as SettingsIcon, Percent } from 'lucide-react'
 import api from '../../lib/api'
 import { PageLoader, Button, Input, Textarea } from '../../components/ui'
 
@@ -114,6 +114,63 @@ export default function AdminSettings() {
             </div>
           </div>
         ))}
+
+        {/* Pajak (PPN) */}
+        {(() => {
+          const taxOn = ['1', 'true', true].includes(values.tax_enabled)
+          return (
+            <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
+              <div className="flex items-center gap-3 border-b border-gray-50 bg-gray-50/50 px-6 py-4">
+                <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-600">
+                  <Percent className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="font-semibold text-gray-900">Pajak (PPN)</h2>
+                  <p className="text-xs text-gray-400">Jika aktif, PPN ditampilkan & ditambahkan pada total pembayaran customer.</p>
+                </div>
+              </div>
+
+              <div className="space-y-4 p-6">
+                {/* Toggle aktif/nonaktif */}
+                <div className="flex items-center justify-between rounded-2xl border border-gray-100 bg-gray-50/50 px-4 py-3">
+                  <div>
+                    <div className="text-sm font-semibold text-gray-900">Aktifkan PPN</div>
+                    <div className="text-xs text-gray-400">{taxOn ? 'PPN sedang aktif.' : 'PPN nonaktif — tidak ditambahkan ke total.'}</div>
+                  </div>
+                  <button
+                    type="button"
+                    role="switch"
+                    aria-checked={taxOn}
+                    onClick={() => set('tax_enabled', taxOn ? '0' : '1')}
+                    className={`relative h-7 w-12 flex-shrink-0 rounded-full transition ${taxOn ? 'bg-brand-600' : 'bg-gray-300'}`}
+                  >
+                    <span className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-all ${taxOn ? 'left-6' : 'left-1'}`} />
+                  </button>
+                </div>
+
+                {/* Persentase */}
+                <div className="max-w-xs">
+                  <label className="block">
+                    <span className="mb-1 block text-sm font-medium text-gray-700">Persentase PPN (%)</span>
+                    <div className="flex items-center gap-2 rounded-xl border border-gray-300 px-3 focus-within:border-brand-500">
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.5"
+                        value={values.tax_percent ?? ''}
+                        onChange={(e) => set('tax_percent', e.target.value)}
+                        placeholder="cth: 11"
+                        className="w-full bg-transparent py-2.5 text-sm outline-none"
+                      />
+                      <Percent className="h-4 w-4 text-gray-400" />
+                    </div>
+                  </label>
+                  <p className="mt-1 text-xs text-gray-400">Dihitung dari subtotal + biaya layanan − diskon.</p>
+                </div>
+              </div>
+            </div>
+          )
+        })()}
 
         {/* Bar simpan mengambang */}
         <div className="sticky bottom-4 z-10 flex items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-white/90 px-5 py-3 shadow-lg backdrop-blur">

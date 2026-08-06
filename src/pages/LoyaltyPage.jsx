@@ -173,7 +173,14 @@ export default function LoyaltyPage() {
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className={`text-lg font-bold ${meta.amount}`}>{meta.sign}{fmt(item.points)}</div>
+                    {(() => {
+                      const neg = item.points < 0 || item.type === 'spend' || item.type === 'expire'
+                      return (
+                        <div className={`text-lg font-bold ${neg ? 'text-gray-500' : meta.amount}`}>
+                          {neg ? '-' : '+'}{fmt(Math.abs(item.points))}
+                        </div>
+                      )
+                    })()}
                     <div className="text-[11px] text-gray-400">Saldo {fmt(item.balance_after)}</div>
                   </div>
                 </div>

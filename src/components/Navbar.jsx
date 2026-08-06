@@ -54,11 +54,9 @@ export default function Navbar() {
           <NavLink to="/promo" className={navLink}>
             Promo
           </NavLink>
-          {user && (
-            <NavLink to="/profile/wishlist" className={navLink}>
-              Wishlist
-            </NavLink>
-          )}
+          <NavLink to="/tentang-bamboe-oerip" className={navLink}>
+            Tentang Bamboe Oerip
+          </NavLink>
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
@@ -160,6 +158,9 @@ export default function Navbar() {
             </Link>
             <Link to="/promo" onClick={() => setOpen(false)} className="block py-2 text-sm text-gray-700">
               Promo
+            </Link>
+            <Link to="/tentang-bamboe-oerip" onClick={() => setOpen(false)} className="block py-2 text-sm text-gray-700">
+              Tentang Bamboe Oerip
             </Link>
             {user ? (
               <>

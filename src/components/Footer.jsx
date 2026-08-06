@@ -27,6 +27,11 @@ export default function Footer() {
               </Link>
             </li>
             <li>
+              <Link to="/tentang-bamboe-oerip" className="hover:text-brand-700">
+                Tentang Bamboe Oerip
+              </Link>
+            </li>
+            <li>
               <Link to="/profile/pesanan" className="hover:text-brand-700">
                 Pesanan Saya
               </Link>

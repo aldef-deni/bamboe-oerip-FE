@@ -49,7 +49,11 @@ export default function Checkout() {
   const subtotal = villa ? Number(villa.price_per_night) * nights : 0
   const serviceFee = Math.round((subtotal * feePercent) / 100)
   const discount = appliedPromo ? Number(appliedPromo.discount) : 0
-  const total = Math.max(0, subtotal + serviceFee - discount)
+  const preTax = subtotal + serviceFee - discount
+  const taxEnabled = ['1', 'true', true].includes(settings.tax_enabled)
+  const taxPercent = Number(settings.tax_percent || 0)
+  const tax = taxEnabled && taxPercent > 0 ? Math.round((preTax * taxPercent) / 100) : 0
+  const total = Math.max(0, preTax + tax)
 
   const applyPromo = async () => {
     const code = promoCode.trim()
@@ -244,6 +248,12 @@ export default function Checkout() {
                 <div className="flex justify-between text-emerald-600">
                   <span>Diskon promo ({appliedPromo.code})</span>
                   <span>−{rupiah(discount)}</span>
+                </div>
+              )}
+              {tax > 0 && (
+                <div className="flex justify-between text-gray-600">
+                  <span>PPN ({taxPercent}%)</span>
+                  <span>{rupiah(tax)}</span>
                 </div>
               )}
               <div className="flex justify-between border-t border-gray-100 pt-2 text-base font-bold text-gray-900">

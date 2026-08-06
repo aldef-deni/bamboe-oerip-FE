@@ -1,6 +1,6 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
-import { Camera, User as UserIcon, CalendarCheck, Heart, Coins } from 'lucide-react'
+import { Camera, User as UserIcon, CalendarCheck, Heart, Coins, Medal, Award, Crown, Gem } from 'lucide-react'
 import api from '../../lib/api'
 import { useAuth } from '../../context/AuthContext'
 
@@ -11,10 +11,29 @@ const tabs = [
   { to: '/profile/loyalty', label: 'Loyalty', icon: Coins },
 ]
 
+const TIER_ICONS = { medal: Medal, award: Award, crown: Crown, gem: Gem }
+const TIER_BG = {
+  bronze: '/loyalty/bronze.webp',
+  silver: '/loyalty/silver.webp',
+  gold: '/loyalty/gold.webp',
+  platinum: '/loyalty/platinum.webp',
+}
+
 export default function AccountLayout() {
   const { user, updateUser } = useAuth()
   const fileRef = useRef(null)
   const [uploading, setUploading] = useState(false)
+  const [tier, setTier] = useState(null)
+
+  useEffect(() => {
+    api
+      .get('/loyalty/balance')
+      .then((res) => setTier(res.data?.current_tier || null))
+      .catch(() => setTier(null))
+  }, [])
+
+  const slug = tier?.slug || 'bronze'
+  const TierIcon = TIER_ICONS[tier?.icon] || Crown
 
   const uploadAvatar = async (e) => {
     const f = e.target.files[0]
@@ -44,10 +63,21 @@ export default function AccountLayout() {
       <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={uploadAvatar} />
 
       <div className="overflow-hidden rounded-3xl border border-gray-100 bg-white shadow-sm">
-        {/* Cover */}
-        <div className="relative h-28 bg-gradient-to-br from-brand-700 via-brand-600 to-brand-800 md:h-32">
-          <div className="absolute inset-0 opacity-10 [background-image:radial-gradient(circle_at_1px_1px,white_1px,transparent_0)] [background-size:22px_22px]" />
-          <div className="absolute -right-10 -top-10 h-40 w-40 rounded-full bg-gold-400/20 blur-2xl" />
+        {/* Cover — background sesuai tier loyalti user */}
+        <div className="relative h-32 overflow-hidden bg-brand-800 md:h-36">
+          <img src={TIER_BG[slug] || TIER_BG.bronze} alt="" className="absolute inset-0 h-full w-full object-cover" />
+          {/* scrim agar avatar & badge kontras */}
+          <div
+            className="absolute inset-0"
+            style={{ background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, rgba(0,0,0,0.15) 45%, rgba(0,0,0,0) 100%)' }}
+          />
+          {/* badge tier */}
+          {tier && (
+            <div className="absolute right-4 top-4 flex items-center gap-1.5 rounded-full border border-amber-300/50 bg-black/40 px-3 py-1 backdrop-blur-sm">
+              <TierIcon className="h-3.5 w-3.5 text-amber-300" />
+              <span className="text-xs font-semibold tracking-wide text-amber-100">{tier.name}</span>
+            </div>
+          )}
           <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gold-400/60 to-transparent" />
         </div>
 

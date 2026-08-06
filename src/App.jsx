@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import Villas from './pages/Villas'
 import VillaDetail from './pages/VillaDetail'
 import PromosPage from './pages/PromosPage'
+import About from './pages/About'
 import Login from './pages/Login'
 import AdminLogin from './pages/AdminLogin'
 import Register from './pages/Register'
@@ -69,6 +70,8 @@ function customerSection() {
       <Route path="/villas" element={<Villas />} />
       <Route path="/villa/:slug" element={<VillaDetail />} />
       <Route path="/promo" element={<PromosPage />} />
+      <Route path="/tentang-bamboe-oerip" element={<About />} />
+      <Route path="/about" element={<Navigate to="/tentang-bamboe-oerip" replace />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/checkout/:slug" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />

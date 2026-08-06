@@ -116,6 +116,7 @@ export default function BookingDetail() {
                 <span>−{rupiah(booking.discount)}</span>
               </div>
             )}
+            {Number(booking.tax) > 0 && <Row label="PPN" value={rupiah(booking.tax)} />}
             <div className="flex justify-between border-t border-gray-100 pt-2 text-base font-bold text-gray-900">
               <span>Total</span>
               <span className="text-brand-700">{rupiah(booking.total)}</span>
