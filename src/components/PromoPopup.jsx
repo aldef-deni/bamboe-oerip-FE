@@ -5,22 +5,19 @@ import api from '../lib/api'
 import { promoValueLabel } from './PromoCard'
 import { formatDate } from '../lib/format'
 
-const SEEN_KEY = 'vb_promo_popup_seen'
-
 export default function PromoPopup() {
   const [promo, setPromo] = useState(null)
   const [open, setOpen] = useState(false)
   const [copied, setCopied] = useState(false)
 
   useEffect(() => {
-    if (sessionStorage.getItem(SEEN_KEY)) return
+    // Selalu tampilkan popup promo setiap kali halaman dimuat/refresh
     api
       .get('/promos/popup')
       .then((res) => {
         if (res.data && res.data.code) {
           setPromo(res.data)
           setOpen(true)
-          sessionStorage.setItem(SEEN_KEY, '1')
         }
       })
       .catch(() => {})
@@ -47,16 +44,18 @@ export default function PromoPopup() {
           <X className="h-5 w-5" />
         </button>
 
-        <div className="aspect-[16/10] bg-gradient-to-br from-brand-500 to-brand-700">
-          {promo.image_url ? (
-            <img src={promo.image_url} alt={promo.code} className="h-full w-full object-cover" />
-          ) : (
-            <div className="flex h-full w-full flex-col items-center justify-center text-white">
-              <Tag className="h-10 w-10" />
-              <span className="mt-2 text-2xl font-bold">{promoValueLabel(promo)}</span>
-            </div>
-          )}
-        </div>
+        {promo.image_url ? (
+          <img
+            src={promo.image_url}
+            alt={promo.code}
+            className="block max-h-[60vh] w-full object-contain"
+          />
+        ) : (
+          <div className="flex aspect-[16/10] w-full flex-col items-center justify-center bg-gradient-to-br from-brand-500 to-brand-700 text-white">
+            <Tag className="h-10 w-10" />
+            <span className="mt-2 text-2xl font-bold">{promoValueLabel(promo)}</span>
+          </div>
+        )}
 
         <div className="p-6 text-center">
           <div className="text-xs font-semibold uppercase tracking-widest text-brand-600">Promo Spesial</div>

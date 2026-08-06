@@ -69,16 +69,14 @@ export default function PromoCard({ promo }) {
               <X className="h-5 w-5" />
             </button>
 
-            <div className="aspect-[16/10] bg-gradient-to-br from-brand-600 to-brand-800">
-              {promo.image_url ? (
-                <img src={promo.image_url} alt={promo.code} className="h-full w-full object-cover" />
-              ) : (
-                <div className="flex h-full w-full flex-col items-center justify-center text-gold-200">
-                  <Tag className="h-10 w-10" />
-                  <span className="mt-2 text-2xl font-bold">{promoValueLabel(promo)}</span>
-                </div>
-              )}
-            </div>
+            {promo.image_url ? (
+              <img src={promo.image_url} alt={promo.code} className="block max-h-[55vh] w-full object-contain" />
+            ) : (
+              <div className="flex aspect-[16/10] w-full flex-col items-center justify-center bg-gradient-to-br from-brand-600 to-brand-800 text-gold-200">
+                <Tag className="h-10 w-10" />
+                <span className="mt-2 text-2xl font-bold">{promoValueLabel(promo)}</span>
+              </div>
+            )}
 
             <div className="p-6">
               <div className="text-xs font-semibold uppercase tracking-widest text-gold-600">Promo Spesial</div>

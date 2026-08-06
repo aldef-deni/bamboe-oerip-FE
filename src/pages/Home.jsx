@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ShieldCheck, Sparkles, Wallet, ArrowRight, Tag, MapPin } from 'lucide-react'
+import { ShieldCheck, Sparkles, Wallet, ArrowRight, Tag } from 'lucide-react'
 import api from '../lib/api'
 import { useSettings } from '../context/SettingsContext'
 import VillaCard from '../components/VillaCard'
@@ -33,19 +33,16 @@ function SectionHeader({ icon: Icon, title, to }) {
 export default function Home() {
   const settings = useSettings()
   const [villas, setVillas] = useState([])
-  const [cities, setCities] = useState([])
   const [promos, setPromos] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     Promise.all([
       api.get('/villas', { params: { per_page: 6, sort: 'rating' } }),
-      api.get('/villas/cities'),
       api.get('/promos'),
     ])
-      .then(([v, c, p]) => {
+      .then(([v, p]) => {
         setVillas(v.data.data)
-        setCities(c.data)
         setPromos(p.data)
       })
       .finally(() => setLoading(false))
@@ -87,24 +84,6 @@ export default function Home() {
         </div>
         <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-gold-400/50 to-transparent" />
       </section>
-
-      {/* ===== Destinasi populer ===== */}
-      {cities.length > 0 && (
-        <section className="mx-auto max-w-6xl px-4 pt-10">
-          <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-gray-400">Destinasi populer</h3>
-          <div className="flex flex-wrap gap-2">
-            {cities.map((city) => (
-              <Link
-                key={city}
-                to={`/villas?search=${encodeURIComponent(city)}`}
-                className="inline-flex items-center gap-1.5 rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-gray-700 transition hover:border-gold-400 hover:text-brand-700 hover:shadow-sm"
-              >
-                <MapPin className="h-3.5 w-3.5 text-gold-500" /> {city}
-              </Link>
-            ))}
-          </div>
-        </section>
-      )}
 
       {/* ===== Promo ===== */}
       {promos.length > 0 && (

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Plus, Pencil, Trash2, X, Tag, Image as ImageIcon, Upload } from 'lucide-react'
+import { Plus, Pencil, Trash2, X, Tag, Image as ImageIcon, Upload, ChevronUp, ChevronDown, ArrowUpDown } from 'lucide-react'
 import api from '../../lib/api'
 import { rupiah, formatDate } from '../../lib/format'
 import { PageLoader, Button, Input, Textarea, Badge, EmptyState, MobileList, DesktopTable, DataCard } from '../../components/ui'
@@ -133,6 +133,20 @@ export default function AdminPromos() {
     setItems((it) => it.filter((x) => x.id !== p.id))
   }
 
+  // Geser urutan tampil kartu promo di web customer (naik/turun)
+  const move = async (index, dir) => {
+    const target = index + dir
+    if (target < 0 || target >= items.length) return
+    const next = [...items]
+    ;[next[index], next[target]] = [next[target], next[index]]
+    setItems(next)
+    try {
+      await api.post('/admin/promos/reorder', { ids: next.map((p) => p.id) })
+    } catch {
+      load() // kembalikan ke urutan server bila gagal
+    }
+  }
+
   const valueLabel = (p) => (p.type === 'percentage' ? `${Number(p.value)}%` : rupiah(p.value))
 
   if (loading) return <PageLoader />
@@ -146,13 +160,20 @@ export default function AdminPromos() {
         </Button>
       </div>
 
+      {items.length > 1 && (
+        <div className="mb-4 flex items-center gap-2 rounded-xl border border-brand-100 bg-brand-50/60 px-4 py-2.5 text-xs text-brand-700">
+          <ArrowUpDown className="h-4 w-4 flex-shrink-0" />
+          Atur urutan tampil kartu promo di web customer dengan tombol naik/turun. Urutan paling atas = tampil paling awal.
+        </div>
+      )}
+
       {items.length === 0 ? (
         <EmptyState icon={Tag} title="Belum ada promo" subtitle="Buat kode promo pertama Anda." />
       ) : (
         <>
           {/* Mobile: kartu */}
           <MobileList>
-            {items.map((p) => (
+            {items.map((p, i) => (
               <DataCard key={p.id}>
                 <div className="flex gap-3">
                   <div className="h-14 w-16 flex-shrink-0 overflow-hidden rounded-xl bg-gray-50">
@@ -211,7 +232,25 @@ export default function AdminPromos() {
                   </div>
                 </div>
 
-                <div className="mt-3 flex gap-2 border-t border-gray-50 pt-3">
+                <div className="mt-3 flex items-center gap-2 border-t border-gray-50 pt-3">
+                  <div className="flex flex-shrink-0 overflow-hidden rounded-xl border border-gray-200">
+                    <button
+                      onClick={() => move(i, -1)}
+                      disabled={i === 0}
+                      title="Naikkan urutan"
+                      className="p-2.5 text-gray-500 hover:bg-gray-50 disabled:opacity-30"
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </button>
+                    <button
+                      onClick={() => move(i, 1)}
+                      disabled={i === items.length - 1}
+                      title="Turunkan urutan"
+                      className="border-l border-gray-200 p-2.5 text-gray-500 hover:bg-gray-50 disabled:opacity-30"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                  </div>
                   <button
                     onClick={() => openEdit(p)}
                     className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-brand-50 py-2.5 text-sm font-semibold text-brand-700"
@@ -233,6 +272,7 @@ export default function AdminPromos() {
           <DesktopTable>
             <thead className="border-b border-gray-100 text-xs uppercase text-gray-500">
               <tr>
+                <th className="px-4 py-3">Urutan</th>
                 <th className="px-4 py-3">Kode</th>
                 <th className="px-4 py-3">Potongan</th>
                 <th className="px-4 py-3">Min. Belanja</th>
@@ -243,8 +283,31 @@ export default function AdminPromos() {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50">
-              {items.map((p) => (
+              {items.map((p, i) => (
                 <tr key={p.id} className="hover:bg-gray-50">
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 text-center text-sm font-semibold text-gray-400">{i + 1}</span>
+                      <div className="flex flex-col overflow-hidden rounded-lg border border-gray-200">
+                        <button
+                          onClick={() => move(i, -1)}
+                          disabled={i === 0}
+                          title="Naikkan urutan"
+                          className="px-1.5 py-0.5 text-gray-500 hover:bg-gray-50 disabled:opacity-30"
+                        >
+                          <ChevronUp className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          onClick={() => move(i, 1)}
+                          disabled={i === items.length - 1}
+                          title="Turunkan urutan"
+                          className="border-t border-gray-200 px-1.5 py-0.5 text-gray-500 hover:bg-gray-50 disabled:opacity-30"
+                        >
+                          <ChevronDown className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-3">
                       <div className="h-10 w-14 flex-shrink-0 overflow-hidden rounded-lg bg-gray-50">
