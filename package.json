@@ -11,6 +11,8 @@
     "postbuild:staging": "powershell -NoProfile -Command \"Get-ChildItem -Path dist -Force | Compress-Archive -DestinationPath villabox-fe.zip -Force\"",
     "build:admin": "vite build --mode admin --outDir dist-admin",
     "postbuild:admin": "powershell -NoProfile -Command \"Get-ChildItem -Path dist-admin -Force | Compress-Archive -DestinationPath villabox-admin.zip -Force\"",
+    "build:owner": "vite build --mode owner --outDir dist-owner",
+    "postbuild:owner": "powershell -NoProfile -Command \"Get-ChildItem -Path dist-owner -Force | Compress-Archive -DestinationPath villabox-owner.zip -Force\"",
     "lint": "oxlint",
     "preview": "vite preview"
   },

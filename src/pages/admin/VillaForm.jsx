@@ -5,6 +5,7 @@ import api from '../../lib/api'
 import { PageLoader, Button, Input, Textarea } from '../../components/ui'
 import RegionSelect from '../../components/RegionSelect'
 import MapPicker from '../../components/MapPicker'
+import { compressImage } from '../../lib/imageCompress'
 
 const empty = {
   name: '',
@@ -25,6 +26,7 @@ const empty = {
   longitude: '',
   is_active: true,
   is_featured: false,
+  owner_id: '',
 }
 
 export default function VillaForm() {
@@ -40,9 +42,15 @@ export default function VillaForm() {
   const [loading, setLoading] = useState(editing)
   const [saving, setSaving] = useState(false)
   const [errors, setErrors] = useState({})
+  const [owners, setOwners] = useState([])
+  const [review, setReview] = useState(null) // { status, note } untuk properti ajuan owner
 
   useEffect(() => {
     api.get('/amenities').then((res) => setAmenities(res.data))
+    api
+      .get('/admin/owners', { params: { per_page: 200 } })
+      .then((res) => setOwners(res.data.data || []))
+      .catch(() => setOwners([]))
   }, [])
 
   useEffect(() => {
@@ -70,7 +78,9 @@ export default function VillaForm() {
           longitude: v.longitude || '',
           is_active: v.is_active,
           is_featured: v.is_featured,
+          owner_id: v.owner_id || '',
         })
+        setReview(v.review_status && v.review_status !== 'approved' ? { status: v.review_status, note: v.review_note } : null)
         setSelected(v.amenities.map((a) => a.id))
         setExistingImages(v.images || [])
       })
@@ -167,7 +177,11 @@ export default function VillaForm() {
       else fd.append(k, v ?? '')
     })
     fd.append('amenities', selected.join(','))
-    newImages.forEach((file) => fd.append('images[]', file))
+    // Perkecil foto dulu agar tidak melebihi batas upload server
+    for (const file of newImages) {
+      const out = await compressImage(file)
+      fd.append('images[]', out, out.name)
+    }
     if (primaryIndex !== null) fd.append('primary_index', String(primaryIndex))
 
     try {
@@ -195,6 +209,23 @@ export default function VillaForm() {
       <h1 className="mb-6 text-2xl font-bold text-gray-900">{editing ? 'Edit Villa' : 'Tambah Villa'}</h1>
 
       {errors.general && <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">{errors.general[0]}</div>}
+      {Object.keys(errors).some((k) => k.startsWith('images')) && (
+        <div className="mb-4 rounded-xl bg-red-50 px-4 py-3 text-sm text-red-600">
+          {errors[Object.keys(errors).find((k) => k.startsWith('images'))][0]}
+        </div>
+      )}
+
+      {review && (
+        <div
+          className={`mb-4 rounded-xl px-4 py-3 text-sm ${
+            review.status === 'pending' ? 'border border-amber-200 bg-amber-50 text-amber-800' : 'border border-red-200 bg-red-50 text-red-700'
+          }`}
+        >
+          {review.status === 'pending'
+            ? 'Properti ajuan owner ini menunggu tinjauan. Centang "Aktif" lalu simpan (atau gunakan tombol Setujui di daftar villa) untuk menayangkannya.'
+            : `Properti ini ditolak. Catatan untuk owner: ${review.note || '-'}`}
+        </div>
+      )}
 
       <form onSubmit={submit} className="space-y-6">
         <div className="rounded-2xl border border-gray-100 bg-white p-6">
@@ -219,6 +250,23 @@ export default function VillaForm() {
           <div className="mt-4">
             <Textarea label="Deskripsi" rows={4} value={form.description} onChange={(e) => set('description', e.target.value)} />
           </div>
+          <label className="mt-4 block">
+            <span className="mb-1 block text-sm font-medium text-gray-700">Owner properti</span>
+            <select
+              value={form.owner_id}
+              onChange={(e) => set('owner_id', e.target.value)}
+              className="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm"
+            >
+              <option value="">— Dikelola Bamboe Oerip (tanpa owner) —</option>
+              {owners.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.name} (@{o.username}){o.is_active ? '' : ' — nonaktif'}
+                </option>
+              ))}
+            </select>
+            <span className="mt-1 block text-xs text-gray-400">Owner dapat mengelola properti ini dari Extranet Owner.</span>
+            {errors.owner_id?.[0] && <span className="mt-1 block text-xs text-red-600">{errors.owner_id[0]}</span>}
+          </label>
         </div>
 
         {/* Lokasi */}

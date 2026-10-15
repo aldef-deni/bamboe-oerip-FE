@@ -37,6 +37,13 @@ export function AuthProvider({ children }) {
     return res.data.user
   }
 
+  // Login Extranet Owner — login = username atau email
+  const ownerLogin = async (login, password) => {
+    const res = await api.post('/owner/login', { login, password })
+    persist(res.data)
+    return res.data.user
+  }
+
   const register = async (payload) => {
     const res = await api.post('/register', payload)
     persist(res.data)
@@ -64,7 +71,19 @@ export function AuthProvider({ children }) {
 
   return (
     <AuthContext.Provider
-      value={{ user, loading, login, adminLogin, register, loginWithGoogle, logout, updateUser, isAdmin: user?.role === 'admin' }}
+      value={{
+        user,
+        loading,
+        login,
+        adminLogin,
+        ownerLogin,
+        register,
+        loginWithGoogle,
+        logout,
+        updateUser,
+        isAdmin: user?.role === 'admin',
+        isOwner: user?.role === 'owner',
+      }}
     >
       {children}
     </AuthContext.Provider>

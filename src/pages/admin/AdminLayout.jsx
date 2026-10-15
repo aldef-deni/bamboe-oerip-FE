@@ -16,6 +16,7 @@ import {
   BarChart3,
   ShieldCheck,
   Coins,
+  Building2,
 } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import NotificationBell from '../../components/NotificationBell'
@@ -30,6 +31,7 @@ const nav = [
   { to: '/admin/amenities', label: 'Fasilitas', icon: Tags },
   { to: '/admin/users', label: 'Pengguna', icon: Users },
   { to: '/admin/loyalty', label: 'Loyalty', icon: Coins },
+  { to: '/admin/owners', label: 'Owner Properti', icon: Building2 },
   { to: '/admin/pengelola', label: 'Pengelola', icon: ShieldCheck },
   { to: '/admin/settings', label: 'Pengaturan', icon: Settings },
 ]

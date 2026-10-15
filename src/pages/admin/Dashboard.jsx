@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Home, Users, CalendarCheck, Wallet, Clock } from 'lucide-react'
+import { Home, Users, CalendarCheck, Wallet, Clock, Building2 } from 'lucide-react'
 import api from '../../lib/api'
 import { rupiah, formatDate, STATUS_LABELS, STATUS_COLORS } from '../../lib/format'
 import { PageLoader, Badge } from '../../components/ui'
@@ -41,6 +41,20 @@ export default function Dashboard() {
           </span>
           <span>
             <strong>{stats.pending_verification}</strong> pembayaran menunggu verifikasi. Klik untuk memproses.
+          </span>
+        </Link>
+      )}
+
+      {stats.pending_villa_review > 0 && (
+        <Link
+          to="/admin/villas?review=pending"
+          className="mb-6 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-gradient-to-r from-emerald-50 to-emerald-100/60 px-5 py-4 text-sm text-emerald-800 shadow-sm transition hover:shadow-md"
+        >
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-400/30">
+            <Building2 className="h-5 w-5" />
+          </span>
+          <span>
+            <strong>{stats.pending_villa_review}</strong> properti dari owner menunggu tinjauan. Klik untuk meninjau.
           </span>
         </Link>
       )}

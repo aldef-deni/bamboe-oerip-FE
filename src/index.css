@@ -25,10 +25,17 @@
 
   --font-sans: "Inter", system-ui, -apple-system, sans-serif;
   --font-serif: "Georgia", "Cambria", "Times New Roman", serif;
+  /* Judul premium ekstranet owner (font dimuat hanya di build owner) */
+  --font-display: "Playfair Display", "Georgia", "Times New Roman", serif;
 }
 
 html {
   scroll-behavior: smooth;
+}
+
+/* Playfair memakai angka gaya lama (0 mirip "o") — paksa angka tegak */
+.font-display {
+  font-variant-numeric: lining-nums;
 }
 
 body {

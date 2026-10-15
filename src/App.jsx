@@ -1,6 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
-import { ProtectedRoute, AdminRoute } from './components/ProtectedRoute'
+import { ProtectedRoute, AdminRoute, OwnerRoute } from './components/ProtectedRoute'
 
 import Home from './pages/Home'
 import Villas from './pages/Villas'
@@ -33,9 +33,20 @@ import AdminSettings from './pages/admin/Settings'
 import LoyaltyPage from './pages/LoyaltyPage'
 import AdminLoyalty from './pages/admin/Loyalty'
 import AdminProfile from './pages/admin/Profile'
+import AdminOwners from './pages/admin/Owners'
+
+import OwnerLogin from './pages/owner/OwnerLogin'
+import OwnerLayout from './pages/owner/OwnerLayout'
+import OwnerDashboard from './pages/owner/Dashboard'
+import OwnerProperties from './pages/owner/Properties'
+import OwnerPropertyForm from './pages/owner/PropertyForm'
+import OwnerBookings from './pages/owner/Bookings'
+import OwnerBookingDetail from './pages/owner/BookingDetail'
+import OwnerReviews from './pages/owner/Reviews'
+import OwnerReports from './pages/owner/Reports'
 
 // Build target: 'customer' (situs pemesanan), 'admin' (dashboard pengelola),
-// atau 'all' (gabungan — dipakai saat pengembangan lokal).
+// 'owner' (ekstranet owner properti), atau 'all' (gabungan — pengembangan lokal).
 const TARGET = import.meta.env.VITE_APP_TARGET || 'all'
 
 // Bagian admin (dipakai di build 'admin' & 'all')
@@ -54,10 +65,30 @@ function adminSection() {
       <Route path="users" element={<AdminCustomers />} />
       <Route path="loyalty" element={<AdminLoyalty />} />
       <Route path="pengelola" element={<AdminUsers />} />
+      <Route path="owners" element={<AdminOwners />} />
       {/* redirect URL lama agar bookmark tetap jalan */}
       <Route path="customers" element={<Navigate to="/admin/users" replace />} />
       <Route path="settings" element={<AdminSettings />} />
       <Route path="profile" element={<AdminProfile />} />
+    </Route>
+  )
+}
+
+// Ekstranet owner (dipakai di build 'owner' & 'all'). Tanpa halaman daftar —
+// akun owner hanya dibuat superadmin dari panel kelola (/admin/owners).
+function ownerSection() {
+  return (
+    <Route path="/owner" element={<OwnerRoute><OwnerLayout /></OwnerRoute>}>
+      <Route index element={<OwnerDashboard />} />
+      <Route path="properties" element={<OwnerProperties />} />
+      <Route path="properties/new" element={<OwnerPropertyForm />} />
+      <Route path="properties/:id/edit" element={<OwnerPropertyForm />} />
+      <Route path="bookings" element={<OwnerBookings />} />
+      <Route path="bookings/:id" element={<OwnerBookingDetail />} />
+      <Route path="reviews" element={<OwnerReviews />} />
+      <Route path="reports" element={<OwnerReports />} />
+      <Route path="profile" element={<AdminProfile />} />
+      <Route path="*" element={<Navigate to="/owner" replace />} />
     </Route>
   )
 }
@@ -102,6 +133,17 @@ export default function App() {
     )
   }
 
+  // Ekstranet owner (owner.bamboeoerip.com)
+  if (TARGET === 'owner') {
+    return (
+      <Routes>
+        <Route path="/login" element={<OwnerLogin />} />
+        {ownerSection()}
+        <Route path="*" element={<Navigate to="/owner" replace />} />
+      </Routes>
+    )
+  }
+
   // Situs pemesanan customer (bamboeoerip.com / dev.bamboeoerip.com)
   if (TARGET === 'customer') {
     return <Routes>{customerSection()}</Routes>
@@ -112,6 +154,8 @@ export default function App() {
     <Routes>
       {customerSection()}
       {adminSection()}
+      <Route path="/owner/login" element={<OwnerLogin />} />
+      {ownerSection()}
     </Routes>
   )
 }

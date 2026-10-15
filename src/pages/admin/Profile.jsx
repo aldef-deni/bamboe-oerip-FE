@@ -122,7 +122,7 @@ export default function AdminProfile() {
                   <h2 className="text-xl font-bold leading-tight text-gray-900">{user?.name}</h2>
                   <div className="mt-2 flex flex-wrap items-center gap-2">
                     <span className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-2.5 py-0.5 text-xs font-semibold text-brand-700 ring-1 ring-brand-100">
-                      <ShieldCheck className="h-3.5 w-3.5" /> Administrator
+                      <ShieldCheck className="h-3.5 w-3.5" /> {user?.role === 'owner' ? 'Owner Properti' : 'Administrator'}
                     </span>
                     <span className="inline-flex items-center gap-1 text-xs text-gray-500">
                       <Mail className="h-3.5 w-3.5 text-gray-400" /> {user?.email}

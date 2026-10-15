@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Bell, CheckCheck, CalendarCheck, Wallet, Home, UserPlus, Coins, Bell as BellIcon } from 'lucide-react'
+import { Bell, CheckCheck, CalendarCheck, Wallet, Home, UserPlus, Coins, Star, ShieldCheck, Bell as BellIcon } from 'lucide-react'
 import api from '../lib/api'
 
 const TYPE_ICON = {
@@ -9,6 +9,8 @@ const TYPE_ICON = {
   villa: Home,
   customer: UserPlus,
   loyalty: Coins,
+  review: Star,
+  account: ShieldCheck,
 }
 const TYPE_TONE = {
   booking: 'bg-blue-50 text-blue-600',
@@ -16,6 +18,8 @@ const TYPE_TONE = {
   villa: 'bg-amber-50 text-amber-600',
   customer: 'bg-violet-50 text-violet-600',
   loyalty: 'bg-yellow-50 text-yellow-600',
+  review: 'bg-orange-50 text-orange-500',
+  account: 'bg-teal-50 text-teal-600',
 }
 
 function timeAgo(iso) {
@@ -32,7 +36,8 @@ function timeAgo(iso) {
 }
 
 /**
- * Lonceng notifikasi. base = '/notifications' (customer) atau '/admin/notifications' (admin).
+ * Lonceng notifikasi. base = '/notifications' (customer), '/admin/notifications' (admin),
+ * atau '/owner/notifications' (ekstranet owner).
  */
 export default function NotificationBell({ base = '/notifications', dark = false }) {
   const [items, setItems] = useState([])
