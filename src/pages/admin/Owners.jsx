@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Plus, Search, Pencil, Trash2, X, KeyRound, Building2, ExternalLink, Copy, Check, RefreshCw } from 'lucide-react'
+import { Plus, Search, Pencil, Trash2, X, KeyRound, Building2, ExternalLink, Copy, Check, RefreshCw, Link2, CheckCircle2 } from 'lucide-react'
 import api from '../../lib/api'
 import { formatDate } from '../../lib/format'
 import { PageLoader, Button, Input, Badge, EmptyState, MobileList, DesktopTable, DataCard } from '../../components/ui'
+import OwnerVillasModal from './OwnerVillasModal'
 
 const OWNER_URL = import.meta.env.VITE_OWNER_URL || 'https://owner.bamboeoerip.com'
 
@@ -26,6 +27,23 @@ export default function AdminOwners() {
   const [search, setSearch] = useState('')
   const [modal, setModal] = useState(null) // null | { mode: 'create' | 'edit', owner? }
   const [created, setCreated] = useState(null) // kredensial owner baru untuk dibagikan
+  const [linking, setLinking] = useState(null) // owner yang sedang dihubungkan ke properti
+  const [flash, setFlash] = useState('')
+
+  const onLinked = (owner, res) => {
+    setLinking(null)
+    setOwners((os) =>
+      os.map((x) =>
+        x.id === owner.id
+          ? { ...x, villas_count: res.villas_count, active_villas_count: res.active_villas_count, pending_villas_count: res.pending_villas_count }
+          : x
+      )
+    )
+    // properti yang dipindah dari owner lain -> muat ulang agar hitungan owner lain ikut benar
+    if (res.moved > 0) load(search)
+    setFlash(res.message)
+    setTimeout(() => setFlash(''), 5000)
+  }
 
   const load = (q = '') => {
     setLoading(true)
@@ -85,7 +103,13 @@ export default function AdminOwners() {
         </Button>
       </div>
 
-      {created && <CredentialCard data={created} onClose={() => setCreated(null)} />}
+      {created && <CredentialCard data={created} onClose={() => setCreated(null)} onLink={!created.reset ? () => setLinking(created) : null} />}
+
+      {flash && (
+        <div className="mb-5 flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">
+          <CheckCircle2 className="h-5 w-5 flex-shrink-0" /> {flash}
+        </div>
+      )}
 
       <div className="mb-4 flex max-w-sm items-center gap-2 rounded-xl border border-gray-200 bg-white px-3">
         <Search className="h-4 w-4 text-gray-400" />
@@ -121,6 +145,9 @@ export default function AdminOwners() {
                     {o.villas_count} properti{o.pending_villas_count > 0 ? ` · ${o.pending_villas_count} ditinjau` : ''}
                   </Link>
                   <div className="flex gap-1">
+                    <button onClick={() => setLinking(o)} title="Hubungkan properti" className="rounded-lg p-2 text-brand-600 hover:bg-brand-50">
+                      <Link2 className="h-4 w-4" />
+                    </button>
                     <button onClick={() => setModal({ mode: 'edit', owner: o })} className="rounded-lg p-2 text-gray-500 hover:bg-brand-50">
                       <Pencil className="h-4 w-4" />
                     </button>
@@ -159,11 +186,17 @@ export default function AdminOwners() {
                       {o.villas_count} properti
                     </Link>
                     {o.pending_villas_count > 0 && <div className="text-[11px] text-amber-600">{o.pending_villas_count} menunggu tinjauan</div>}
+                    <button onClick={() => setLinking(o)} className="mt-0.5 block text-[11px] font-semibold text-gray-500 hover:text-brand-700">
+                      + Hubungkan properti
+                    </button>
                   </td>
                   <td className="px-4 py-3">{statusBadge(o)}</td>
                   <td className="px-4 py-3 text-xs text-gray-500">{formatDate(o.created_at)}</td>
                   <td className="px-4 py-3">
                     <div className="flex justify-end gap-1">
+                      <button onClick={() => setLinking(o)} title="Hubungkan properti" className="rounded-lg p-2 text-brand-600 hover:bg-brand-50">
+                        <Link2 className="h-4 w-4" />
+                      </button>
                       <button onClick={() => setModal({ mode: 'edit', owner: o })} title="Edit / reset password" className="rounded-lg p-2 text-gray-500 hover:bg-brand-50 hover:text-brand-700">
                         <Pencil className="h-4 w-4" />
                       </button>
@@ -180,6 +213,7 @@ export default function AdminOwners() {
       )}
 
       {modal && <OwnerModal mode={modal.mode} owner={modal.owner} onClose={() => setModal(null)} onSaved={onSaved} />}
+      {linking && <OwnerVillasModal owner={linking} onClose={() => setLinking(null)} onSaved={(res) => onLinked(linking, res)} />}
     </div>
   )
 }
@@ -296,7 +330,7 @@ function OwnerModal({ mode, owner, onClose, onSaved }) {
 }
 
 /** Kartu kredensial setelah owner dibuat / password direset — untuk dibagikan ke owner. */
-function CredentialCard({ data, onClose }) {
+function CredentialCard({ data, onClose, onLink }) {
   const [copied, setCopied] = useState(false)
   const text = `Akun Extranet Owner Bamboe Oerip\nAlamat: ${OWNER_URL}\nUsername: ${data.username}\nPassword: ${data.password}\n\nSilakan ganti password setelah login (menu Profil Saya).`
 
@@ -326,6 +360,11 @@ function CredentialCard({ data, onClose }) {
         <Button onClick={copy} variant="subtle">
           {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />} {copied ? 'Tersalin' : 'Salin kredensial'}
         </Button>
+        {onLink && (
+          <Button onClick={onLink}>
+            <Link2 className="h-4 w-4" /> Hubungkan properti yang sudah ada
+          </Button>
+        )}
         <Button as="a" href={OWNER_URL} target="_blank" rel="noopener noreferrer" variant="ghost">
           <ExternalLink className="h-4 w-4" /> Buka Extranet
         </Button>
