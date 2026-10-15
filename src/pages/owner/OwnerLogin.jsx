@@ -37,18 +37,36 @@ export default function OwnerLogin() {
     e.preventDefault()
     setError('')
     setLoading(true)
+    // Koneksi putus sesaat (tanpa respons server) -> ulangi sekali otomatis
+    const attempt = async (retry = true) => {
+      try {
+        return await ownerLogin(form.login.trim(), form.password)
+      } catch (err) {
+        if (retry && err.isAxiosError && !err.response) {
+          await new Promise((r) => setTimeout(r, 900))
+          return attempt(false)
+        }
+        throw err
+      }
+    }
+
     try {
-      await ownerLogin(form.login.trim(), form.password)
+      await attempt()
       navigate(location.state?.from || '/owner', { replace: true })
     } catch (err) {
+      console.error('Login extranet gagal:', err)
       const status = err.response?.status
-      setError(
-        status === 429
-          ? 'Terlalu banyak percobaan masuk. Tunggu 1 menit lalu coba lagi.'
-          : err.response?.data?.errors?.login?.[0] ||
-              err.response?.data?.message ||
-              (err.response ? 'Login gagal. Periksa username/email dan password.' : 'Tidak dapat terhubung ke server. Periksa koneksi internet Anda.')
-      )
+      let msg
+      if (status === 429) msg = 'Terlalu banyak percobaan masuk. Tunggu 1 menit lalu coba lagi.'
+      else if (err.response)
+        msg =
+          err.response.data?.errors?.login?.[0] ||
+          err.response.data?.message ||
+          `Login gagal (kode ${status}). Coba lagi beberapa saat lagi.`
+      else if (err.isAxiosError)
+        msg = `Tidak dapat terhubung ke server Bamboe Oerip (${err.code || 'NETWORK'}). Periksa koneksi internet; bila memakai VPN atau ekstensi pemblokir iklan, nonaktifkan sementara lalu coba lagi.`
+      else msg = `Terjadi kesalahan pada aplikasi: ${err.message}. Muat ulang halaman lalu coba lagi.`
+      setError(msg)
     } finally {
       setLoading(false)
     }

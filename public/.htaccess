@@ -2,6 +2,12 @@
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
+
+  # Extranet owner: www.owner.bamboeoerip.com -> owner.bamboeoerip.com
+  # (satu alamat resmi; sesi login di localStorage tidak terpecah)
+  RewriteCond %{HTTP_HOST} ^www\.owner\.bamboeoerip\.com$ [NC]
+  RewriteRule ^(.*)$ https://owner.bamboeoerip.com/$1 [R=301,L]
+
   RewriteRule ^index\.html$ - [L]
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
